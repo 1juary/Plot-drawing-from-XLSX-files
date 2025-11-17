@@ -1,16 +1,18 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
-def plot_bar_chart_from_excel(file_path, sheet_name, x_col, y_col, title="Bar Chart", xlabel="X axis", ylabel="Y axis"):
+def plot_value_distribution_from_excel(file_path, sheet_name, value_col, bins=10,
+                                       title="数值分布直方图", xlabel="数值区间", ylabel="样本量"):
     """
-    从Excel文件中读取数据并绘制柱状图 (使用pandas)
+    从Excel文件中读取数据并绘制数值分布直方图
 
     参数:
         file_path (str): Excel文件路径
         sheet_name (str): 工作表名称
-        x_col (str/int): 作为X轴的列名或列索引（从0开始）
-        y_col (str/int): 作为Y轴的列名或列索引
+        value_col (str/int): 要分析的列名或列索引（从0开始）
+        bins (int/sequence): 区间数量或自定义区间边界
         title (str): 图表标题
         xlabel (str): X轴标签
         ylabel (str): Y轴标签
@@ -19,18 +21,23 @@ def plot_bar_chart_from_excel(file_path, sheet_name, x_col, y_col, title="Bar Ch
     df = pd.read_excel(file_path, sheet_name=sheet_name)
 
     # 提取指定列数据
-    x_data = df.iloc[:, x_col] if isinstance(x_col, int) else df[x_col]
-    y_data = df.iloc[:, y_col] if isinstance(y_col, int) else df[y_col]
+    values = df.iloc[:, value_col] if isinstance(value_col, int) else df[value_col]
+
+    # 计算数值分布
+    counts, bin_edges = np.histogram(values, bins=bins)
+
+    # 生成区间标签
+    bin_labels = [f"{bin_edges[i]:.1f}-{bin_edges[i + 1]:.1f}" for i in range(len(bin_edges) - 1)]
 
     # 绘制柱状图
     plt.figure(figsize=(10, 6))
-    bars = plt.bar(x_data, y_data, color='skyblue')
+    bars = plt.bar(bin_labels, counts, color='skyblue')
 
     # 添加数值标签
     for bar in bars:
         height = bar.get_height()
         plt.text(bar.get_x() + bar.get_width() / 2., height,
-                 f'{height:.1f}',
+                 f'{int(height)}',
                  ha='center', va='bottom')
 
     # 图表装饰
@@ -51,16 +58,15 @@ if __name__ == "__main__":
 
     # 参数设置
     sheet = "Sheet1"  # 工作表名
-    x_column = "产品"  # 或列索引 (如 0 表示第一列)
-    y_column = "销量"  # 或列索引 (如 1 表示第二列)
+    value_column = "年龄"  # 或列索引 (如 0 表示第一列)
 
     # 绘制图表
-    plot_bar_chart_from_excel(
+    plot_value_distribution_from_excel(
         file_path=excel_file,
         sheet_name=sheet,
-        x_col=x_column,
-        y_col=y_column,
-        title="销售数据柱状图 (Pandas版)",
-        xlabel="产品名称",
-        ylabel="销售量"
+        value_col=value_column,
+        bins=5,  # 可以设置为整数或自定义区间边界如 [0, 20, 40, 60, 80, 100]
+        title="年龄分布直方图",
+        xlabel="年龄区间",
+        ylabel="人数"
     )
