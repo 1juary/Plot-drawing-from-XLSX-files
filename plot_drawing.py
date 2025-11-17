@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def plot_bar_chart_from_excel(file_path, sheet_name, x_col, y_col, title="柱状图", xlabel="X轴", ylabel="Y轴"):
+def plot_bar_chart_from_excel(file_path, sheet_name, x_col, y_col, title="Bar Chart", xlabel="X axis", ylabel="Y axis"):
     """
     从Excel文件中读取数据并绘制柱状图 (使用pandas)
 
