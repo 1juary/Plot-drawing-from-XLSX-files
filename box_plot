@@ -1,1 +1,101 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from faker import Faker  # 用于生成随机姓名
 
+# 初始化Faker生成器
+fake = Faker('zh_CN')
+
+
+def generate_random_data(num_records=100):
+    """生成包含随机年龄和姓名的DataFrame"""
+    data = {
+        '姓名': [fake.name() for _ in range(num_records)],
+        '年龄': np.random.normal(loc=35, scale=10, size=num_records).astype(int)
+    }
+    # 确保年龄在合理范围内(0-100)
+    data['年龄'] = np.clip(data['年龄'], 0, 100)
+    return pd.DataFrame(data)
+
+
+def plot_value_distribution_from_data(data,
+                                     value_col,
+                                     title="Numerical Distribution Boxplot",
+                                     xlabel="Value",
+                                     ylabel="Distribution"):
+    """
+    从DataFrame中读取数据并绘制数值分布箱线图
+
+    参数:
+        data (DataFrame): 包含数据的DataFrame
+        value_col (str/int): 要分析的列名或列索引（从0开始）
+        title (str): 图表标题
+        xlabel (str): X轴标签
+        ylabel (str): Y轴标签
+    """
+    # 提取指定列数据
+    values = data.iloc[:, value_col] if isinstance(value_col, int) else data[value_col]
+
+    # 计算关键统计数据
+    stats = {
+        "Mean": np.mean(values),
+        "Median": np.median(values),
+        "STD": np.std(values),
+        "Min": np.min(values),
+        "Max": np.max(values),
+        "Length": len(values),
+        "Skew": pd.Series(values).skew(),
+        "Kurt": pd.Series(values).kurt()
+    }
+
+    # 将统计信息格式化为字符串
+    stats_text = "\n".join([f"{k}: {v:.2f}" if isinstance(v, (float, np.floating)) else f"{k}: {v}"
+                           for k, v in stats.items()])
+
+    # 创建图表
+    plt.figure(figsize=(10, 6))
+    
+    # 绘制箱线图
+    boxplot = plt.boxplot(values, vert=False, patch_artist=True)
+    
+    # 设置箱线图颜色
+    for box in boxplot['boxes']:
+        box.set(facecolor='skyblue')
+    
+    # 在图表右侧添加统计信息
+    plt.text(0.95, 0.95, stats_text,
+             transform=plt.gca().transAxes,
+             verticalalignment='top',
+             horizontalalignment='right',
+             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+
+    # 图表装饰
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.tight_layout()
+
+    # 显示图表
+    plt.show()
+
+
+# 示例用法
+if __name__ == "__main__":
+    # 生成随机数据
+    random_data = generate_random_data(num_records=200)
+
+    # 显示前5行数据
+    print("生成的随机数据示例:")
+    print(random_data.head())
+
+    # 参数设置
+    value_column = "年龄"  # 要分析的列名
+
+    # 绘制图表
+    plot_value_distribution_from_data(
+        data=random_data,
+        value_col=value_column,
+        title="Age Distribution Boxplot",
+        xlabel="Age",
+        ylabel="Distribution"
+    )
